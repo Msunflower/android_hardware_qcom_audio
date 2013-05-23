@@ -52,6 +52,10 @@
 
 #include "sound/compress_params.h"
 
+#ifdef USES_AUDIO_AMPLIFIER
+#include <audio_amplifier.h>
+#endif
+
 #define COMPRESS_OFFLOAD_FRAGMENT_SIZE (32 * 1024)
 #define COMPRESS_OFFLOAD_NUM_FRAGMENTS 4
 /* ToDo: Check and update a proper value in msec */
@@ -648,6 +652,12 @@ int select_devices(struct audio_device *adev,
     usecase->out_snd_device = out_snd_device;
 
     enable_audio_route(adev, usecase);
+
+#ifdef USES_AUDIO_AMPLIFIER
+    /* Rely on amplifier_set_devices to distinguish between in/out devices */
+    amplifier_set_devices(in_snd_device);
+    amplifier_set_devices(out_snd_device);
+#endif
 
     /* Applicable only on the targets that has external modem.
      * Enable device command should be sent to modem only after
@@ -2302,6 +2312,10 @@ static int adev_set_mode(struct audio_hw_device *dev, audio_mode_t mode)
     pthread_mutex_lock(&adev->lock);
     if (adev->mode != mode) {
         ALOGD("%s: mode %d\n", __func__, mode);
+#ifdef USES_AUDIO_AMPLIFIER
+        if (amplifier_set_mode(mode) != 0)
+            ALOGE("Failed setting amplifier mode");
+#endif
         adev->mode = mode;
         if ((mode == AUDIO_MODE_NORMAL || mode == AUDIO_MODE_IN_COMMUNICATION) &&
                 voice_is_in_call(adev)) {
@@ -2597,6 +2611,12 @@ static int adev_close(hw_device_t *device)
 {
     size_t i;
     struct audio_device *adev = (struct audio_device *)device;
+
+#ifdef USES_AUDIO_AMPLIFIER
+    if (amplifier_close() != 0)
+        ALOGE("Amplifier close failed");
+#endif
+
     audio_route_free(adev->audio_route);
     free(adev->snd_dev_ref_cnt);
     platform_deinit(adev->platform);
@@ -2672,6 +2692,12 @@ static int adev_open(const hw_module_t *module, const char *name,
     adev->snd_dev_ref_cnt = calloc(SND_DEVICE_MAX, sizeof(int));
     voice_init(adev);
     list_init(&adev->usecase_list);
+
+#ifdef USES_AUDIO_AMPLIFIER
+    if (amplifier_open() != 0)
+        ALOGE("Amplifier initialization failed");
+#endif
+
     pthread_mutex_unlock(&adev->lock);
 
     /* Loads platform specific libraries dynamically */
