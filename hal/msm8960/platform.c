@@ -118,6 +118,7 @@ static const char * const device_table[SND_DEVICE_MAX] = {
     [SND_DEVICE_OUT_SPEAKER_REVERSE] = "speaker-reverse",
     [SND_DEVICE_OUT_HEADPHONES] = "headphones",
     [SND_DEVICE_OUT_SPEAKER_AND_HEADPHONES] = "speaker-and-headphones",
+    [SND_DEVICE_OUT_VOICE_HANDSET] = "voice-handset",
     [SND_DEVICE_OUT_VOICE_SPEAKER] = "voice-speaker",
     [SND_DEVICE_OUT_VOICE_HEADPHONES] = "voice-headphones",
     [SND_DEVICE_OUT_HDMI] = "hdmi",
@@ -165,6 +166,7 @@ static const int acdb_device_table[SND_DEVICE_MAX] = {
     [SND_DEVICE_OUT_SPEAKER_REVERSE] = 14,
     [SND_DEVICE_OUT_HEADPHONES] = 10,
     [SND_DEVICE_OUT_SPEAKER_AND_HEADPHONES] = 10,
+    [SND_DEVICE_OUT_VOICE_HANDSET] = 7,
     [SND_DEVICE_OUT_VOICE_SPEAKER] = 14,
     [SND_DEVICE_OUT_VOICE_HEADPHONES] = 10,
     [SND_DEVICE_OUT_HDMI] = 18,
@@ -620,7 +622,7 @@ snd_device_t platform_get_output_snd_device(void *platform, audio_devices_t devi
             if (is_operator_tmus())
                 snd_device = SND_DEVICE_OUT_VOICE_HANDSET_TMUS;
             else
-                snd_device = SND_DEVICE_OUT_HANDSET;
+                snd_device = SND_DEVICE_OUT_VOICE_HANDSET;
         }
         if (snd_device != SND_DEVICE_NONE) {
             goto exit;
